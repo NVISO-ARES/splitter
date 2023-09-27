@@ -25,33 +25,40 @@ func split(target string, number int, pre string, post string, total int) {
     i := 0
     j := 0
 	split := total / number
-	split += 1
+	split -= 1 //add lines split-1 times, add final line before writing
 	var txtlines []string
+
     for scanner.Scan() {
         if i < split {
-           txtlines = append(txtlines, scanner.Text())
-           i += 1
+            txtlines = append(txtlines, scanner.Text())
+            i += 1
         } else {
+            txtlines = append(txtlines, scanner.Text()) //add line one more time and write to file
             f, _ := os.Create (pre + strconv.Itoa(j) + post)
             defer f.Close()
             for _, element := range txtlines {
 				element = element + "\n"
                 f.WriteString(element)
-			 }
-			 txtlines = nil
-			 j += 1
-			 i = 0
-         }
-	 }
-	 f, _ := os.Create (pre + strconv.Itoa(j) + post)
-	 defer f.Close()
-	 for _, element := range txtlines {
-		element = element + "\r\n"
-		f.WriteString(element)
-	  }
-	  txtlines = nil
-	  j += 1
-	  split += split
+			}
+			txtlines = nil
+			j += 1
+			i = 0
+        }
+	}
+
+	if len(txtlines) > 0 {
+        f, _ := os.Create (pre + strconv.Itoa(j) + post)
+	    defer f.Close()
+
+	    for _, element := range txtlines {
+	        element = element + "\r\n"
+		    f.WriteString(element)
+	    }
+    }
+
+	txtlines = nil
+    j += 1
+	split += split
 }
 
 func lineCounter(file string) (int, error) {
@@ -68,10 +75,10 @@ func lineCounter(file string) (int, error) {
 
         switch {
         case err == io.EOF:
-            return count, nil
+            return count +1, nil
 
         case err != nil:
-            return count, err
+            return count+1, err
         }
     }
 }
